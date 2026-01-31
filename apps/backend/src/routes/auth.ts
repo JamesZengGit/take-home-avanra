@@ -28,7 +28,7 @@ router.get('/role/:userId', async (req: Request, res: Response) => {
 
     // Check if user is a sponsor
     const sponsor = await prisma.sponsor.findUnique({
-      where: { userId },
+      where: { userId: userId as string },
       select: { id: true, name: true },
     });
 
@@ -39,7 +39,7 @@ router.get('/role/:userId', async (req: Request, res: Response) => {
 
     // Check if user is a publisher
     const publisher = await prisma.publisher.findUnique({
-      where: { userId },
+      where: { userId: userId as string },
       select: { id: true, name: true },
     });
 

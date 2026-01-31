@@ -82,9 +82,9 @@ router.post('/', async (req: Request, res: Response) => {
         name,
         description,
         type,
-        dimensions, // BUG: This field doesn't exist in schema
+        // dimensions, // Removed: This field doesn't exist in schema
         basePrice,
-        pricingModel: pricingModel || 'CPM', // BUG: This field doesn't exist in schema
+        // pricingModel: pricingModel || 'CPM', // Removed: This field doesn't exist in schema
         publisherId,
       },
       include: {
@@ -157,7 +157,7 @@ router.post('/:id/unbook', async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const updatedSlot = await prisma.adSlot.update({
-      where: { id },
+      where: { id: id as string },
       data: { isAvailable: true },
       include: {
         publisher: { select: { id: true, name: true } },

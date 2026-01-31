@@ -1,9 +1,9 @@
 import express, { type Application } from 'express';
-import cors from 'cors';
 import routes from './routes/index.js';
 
 const app: Application = express();
 const PORT = process.env.BACKEND_PORT || 4291;
+const cors = require('cors') as any; // Use require with type assertion to avoid TypeScript declaration errors
 
 // Middleware
 // FIXME: CORS is configured with defaults - for production, specify allowed origins
