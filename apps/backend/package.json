@@ -33,6 +33,7 @@
     "@anvara/config": "workspace:*",
     "@anvara/eslint-config": "workspace:*",
     "@anvara/prettier-config": "workspace:*",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "eslint": "^9.39.2",
     "prisma": "^7.2.0",
