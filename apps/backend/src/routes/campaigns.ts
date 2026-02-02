@@ -1,18 +1,20 @@
 import { Router, type Request, type Response, type IRouter } from 'express';
 import { prisma } from '../db.js';
 import { getParam } from '../utils/helpers.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router: IRouter = Router();
 
-// GET /api/campaigns - List all campaigns
-router.get('/', async (req: Request, res: Response) => {
+// GET /api/campaigns - List campaigns for authenticated sponsor
+router.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { status, sponsorId } = req.query;
+    const { status } = req.query;
 
+    // Security: Only show campaigns for the authenticated sponsor
     const campaigns = await prisma.campaign.findMany({
       where: {
+        sponsorId: req.user!.sponsorId, // Only user's own campaigns
         ...(status && { status: status as string as 'ACTIVE' | 'PAUSED' | 'COMPLETED' }),
-        ...(sponsorId && { sponsorId: getParam(sponsorId) }),
       },
       include: {
         sponsor: { select: { id: true, name: true, logo: true } },
@@ -28,12 +30,17 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/campaigns/:id - Get single campaign with details
-router.get('/:id', async (req: Request, res: Response) => {
+// GET /api/campaigns/:id - Get single campaign with details (ownership verified)
+router.get('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
+
+    // Security: Only show campaign if user owns it
     const campaign = await prisma.campaign.findUnique({
-      where: { id },
+      where: {
+        id,
+        sponsorId: req.user!.sponsorId // Ownership check
+      },
       include: {
         sponsor: true,
         creatives: true,
@@ -58,8 +65,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/campaigns - Create new campaign
-router.post('/', async (req: Request, res: Response) => {
+// POST /api/campaigns - Create new campaign for authenticated sponsor
+router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const {
       name,
@@ -71,16 +78,16 @@ router.post('/', async (req: Request, res: Response) => {
       endDate,
       targetCategories,
       targetRegions,
-      sponsorId,
     } = req.body;
 
-    if (!name || !budget || !startDate || !endDate || !sponsorId) {
+    if (!name || !budget || !startDate || !endDate) {
       res.status(400).json({
-        error: 'Name, budget, startDate, endDate, and sponsorId are required',
+        error: 'Name, budget, startDate, and endDate are required',
       });
       return;
     }
 
+    // Security: Use authenticated user's sponsorId
     const campaign = await prisma.campaign.create({
       data: {
         name,
@@ -92,7 +99,7 @@ router.post('/', async (req: Request, res: Response) => {
         endDate: new Date(endDate),
         targetCategories: targetCategories || [],
         targetRegions: targetRegions || [],
-        sponsorId,
+        sponsorId: req.user!.sponsorId, // Use authenticated sponsor's ID
       },
       include: {
         sponsor: { select: { id: true, name: true } },

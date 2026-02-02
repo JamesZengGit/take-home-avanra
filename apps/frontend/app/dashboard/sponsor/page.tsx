@@ -27,9 +27,11 @@ export default async function SponsorDashboard() {
   let error: string | undefined;
 
   try {
-    if (roleData.sponsorId) {
-      campaigns = await getCampaigns(roleData.sponsorId);
-    }
+    // Pass cookies from server-side context to API call
+    const headersList = await headers();
+    const cookieHeader = headersList.get('cookie');
+
+    campaigns = await getCampaigns(cookieHeader);
   } catch (err) {
     console.error('Failed to load campaigns:', err);
     error = 'Failed to load campaigns';
