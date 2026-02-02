@@ -6,9 +6,14 @@ const PORT = process.env.BACKEND_PORT || 4291;
 import cors from 'cors';
 
 // Middleware
-// FIXME: CORS is configured with defaults - for production, specify allowed origins
 // TODO: Add rate limiting middleware to prevent abuse (e.g., express-rate-limit)
-app.use(cors());
+// CORS configured to support credentials for cross-origin requests
+app.use(cors({
+  origin: ['http://localhost:3847', 'http://localhost:3000'], // Frontend origins
+  credentials: true, // Allow cookies to be sent
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
 app.use(express.json());
 
 // Mount all API routes
